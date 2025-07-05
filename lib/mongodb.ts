@@ -20,6 +20,7 @@ export interface Transaction {
   amount: number;
   date: string;
   description: string;
+  category: string;
   createdAt: string;
 }
 
@@ -37,6 +38,7 @@ export async function getTransactions(): Promise<Transaction[]> {
     amount: t.amount,
     date: t.date,
     description: t.description,
+    category: t.category || "Others", // Default category for existing transactions
     createdAt: t.createdAt,
   }));
 }
@@ -65,6 +67,7 @@ export async function createTransaction(
     amount: newTransaction.amount,
     date: newTransaction.date,
     description: newTransaction.description,
+    category: newTransaction.category,
     createdAt: newTransaction.createdAt,
   };
 }
@@ -91,6 +94,7 @@ export async function updateTransaction(
     amount: result.value.amount,
     date: result.value.date,
     description: result.value.description,
+    category: result.value.category,
     createdAt: result.value.createdAt,
   };
 }

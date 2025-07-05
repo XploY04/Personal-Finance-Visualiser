@@ -8,6 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TransactionForm } from "@/components/transaction-form"
 import { TransactionList } from "@/components/transaction-list"
 import { MonthlyChart } from "@/components/monthly-chart"
+import { CategoryPieChart } from "@/components/category-pie-chart"
+import { RecentTransactions } from "@/components/recent-transactions"
+import { TopCategories } from "@/components/top-categories"
 import { useToast } from "@/hooks/use-toast"
 
 export interface Transaction {
@@ -15,6 +18,7 @@ export interface Transaction {
   amount: number
   date: string
   description: string
+  category: string
   createdAt: string
 }
 
@@ -188,7 +192,7 @@ export default function Dashboard() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
@@ -222,29 +226,60 @@ export default function Dashboard() {
             <p className="text-xs text-muted-foreground">All time</p>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Categories</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {new Set(transactions.map(t => t.category)).size}
+            </div>
+            <p className="text-xs text-muted-foreground">Active categories</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Main Content */}
-      <Tabs defaultValue="transactions" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2">
+      <Tabs defaultValue="dashboard" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="transactions">Transactions</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="dashboard" className="space-y-4">
+          {/* Dashboard Content with Recent Transactions and Top Categories */}
+          <div className="grid gap-4 md:grid-cols-2">
+            <RecentTransactions transactions={transactions} />
+            <TopCategories transactions={transactions} />
+          </div>
+        </TabsContent>
 
         <TabsContent value="transactions" className="space-y-4">
           <TransactionList transactions={transactions} onEdit={openEditForm} onDelete={handleDeleteTransaction} />
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Monthly Expenses</CardTitle>
-              <CardDescription>Your spending patterns throughout the year</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <MonthlyChart transactions={transactions} />
-            </CardContent>
-          </Card>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Monthly Expenses</CardTitle>
+                <CardDescription>Your spending patterns throughout the year</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <MonthlyChart transactions={transactions} />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Category Breakdown</CardTitle>
+                <CardDescription>Expenses by category</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CategoryPieChart transactions={transactions} />
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
 

@@ -25,7 +25,7 @@ interface TransactionListProps {
   onDelete: (id: string) => void
 }
 
-type SortField = "date" | "amount" | "description"
+type SortField = "date" | "amount" | "description" | "category"
 type SortOrder = "asc" | "desc"
 
 export function TransactionList({ transactions, onEdit, onDelete }: TransactionListProps) {
@@ -57,6 +57,10 @@ export function TransactionList({ transactions, onEdit, onDelete }: TransactionL
       case "description":
         aValue = a.description.toLowerCase()
         bValue = b.description.toLowerCase()
+        break
+      case "category":
+        aValue = a.category.toLowerCase()
+        bValue = b.category.toLowerCase()
         break
       default:
         return 0
@@ -113,6 +117,16 @@ export function TransactionList({ transactions, onEdit, onDelete }: TransactionL
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleSort("category")}
+                    className="h-auto p-0 font-semibold"
+                  >
+                    Category
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
                 <TableHead className="text-right">
                   <Button variant="ghost" onClick={() => handleSort("amount")} className="h-auto p-0 font-semibold">
                     Amount
@@ -130,6 +144,11 @@ export function TransactionList({ transactions, onEdit, onDelete }: TransactionL
                     <div className="max-w-[200px] truncate" title={transaction.description}>
                       {transaction.description}
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                      {transaction.category}
+                    </span>
                   </TableCell>
                   <TableCell className="text-right font-medium">${transaction.amount.toFixed(2)}</TableCell>
                   <TableCell>

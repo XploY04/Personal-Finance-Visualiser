@@ -17,7 +17,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { amount, date, description } = body;
+    const { amount, date, description, category } = body;
 
     // Validation
     if (!amount || amount <= 0) {
@@ -38,10 +38,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!category || !category.trim()) {
+      return NextResponse.json(
+        { error: "Category is required" },
+        { status: 400 }
+      );
+    }
+
     const newTransaction = await createTransaction({
       amount: Number(amount),
       date,
       description: description.trim(),
+      category: category.trim(),
       createdAt: new Date().toISOString(),
     });
 

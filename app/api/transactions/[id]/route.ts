@@ -8,7 +8,7 @@ export async function PUT(
   try {
     const { id } = params;
     const body = await request.json();
-    const { amount, date, description } = body;
+    const { amount, date, description, category } = body;
 
     // Validation
     if (!amount || amount <= 0) {
@@ -29,10 +29,18 @@ export async function PUT(
       );
     }
 
+    if (!category || !category.trim()) {
+      return NextResponse.json(
+        { error: "Category is required" },
+        { status: 400 }
+      );
+    }
+
     const updatedTransaction = await updateTransaction(id, {
       amount: Number(amount),
       date,
       description: description.trim(),
+      category: category.trim(),
     });
 
     if (!updatedTransaction) {

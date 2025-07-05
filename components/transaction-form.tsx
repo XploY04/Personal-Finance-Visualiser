@@ -19,8 +19,20 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import type { Transaction } from "@/app/page"
+
+const CATEGORIES = [
+  "Food",
+  "Transport",
+  "Utilities",
+  "Rent",
+  "Entertainment",
+  "Shopping",
+  "Healthcare",
+  "Others",
+]
 
 interface TransactionFormProps {
   transaction?: Transaction | null
@@ -32,6 +44,7 @@ export function TransactionForm({ transaction, onSubmit, onCancel }: Transaction
   const [amount, setAmount] = useState("")
   const [date, setDate] = useState<Date>()
   const [description, setDescription] = useState("")
+  const [category, setCategory] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -40,10 +53,12 @@ export function TransactionForm({ transaction, onSubmit, onCancel }: Transaction
       setAmount(transaction.amount.toString())
       setDate(new Date(transaction.date))
       setDescription(transaction.description)
+      setCategory(transaction.category)
     } else {
       setAmount("")
       setDate(new Date())
       setDescription("")
+      setCategory("")
     }
     setErrors({})
   }, [transaction])
@@ -61,6 +76,10 @@ export function TransactionForm({ transaction, onSubmit, onCancel }: Transaction
 
     if (!description.trim()) {
       newErrors.description = "Description is required"
+    }
+
+    if (!category.trim()) {
+      newErrors.category = "Category is required"
     }
 
     setErrors(newErrors)
@@ -81,6 +100,7 @@ export function TransactionForm({ transaction, onSubmit, onCancel }: Transaction
         amount: Number(amount),
         date: date!.toISOString(),
         description: description.trim(),
+        category: category.trim(),
       })
     } catch (error) {
       console.error("Error submitting transaction:", error)
@@ -148,6 +168,23 @@ export function TransactionForm({ transaction, onSubmit, onCancel }: Transaction
               rows={3}
             />
             {errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="category">Category</Label>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger className={errors.category ? "border-red-500" : ""}>
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                {CATEGORIES.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.category && <p className="text-sm text-red-500">{errors.category}</p>}
           </div>
 
           <DialogFooter>
