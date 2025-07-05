@@ -109,3 +109,127 @@ export async function deleteTransaction(id: string): Promise<boolean> {
 
   return result.deletedCount === 1;
 }
+
+export interface Budget {
+  _id?: string;
+  category: string;
+  month: string; // Format: "YYYY-MM"
+  budget: number;
+  createdAt: string;
+}
+
+export async function getBudgets(month?: string | null): Promise<Budget[]> {
+  const client = await clientPromise;
+  const db = client.db("finance_tracker");
+
+  let query = {};
+  if (month) {
+    query = { month };
+  }
+
+  const budgets = await db
+    .collection("budgets")
+    .find(query)
+    .sort({ createdAt: -1 })
+    .toArray();
+
+  return budgets.map((b) => ({
+    _id: b._id.toString(),
+    category: b.category,
+    month: b.month,
+    budget: b.budget,
+    createdAt: b.createdAt,
+  }));
+}
+
+export async function createBudget(
+  budget: Omit<Budget, "_id">
+): Promise<Budget> {
+  const client = await clientPromise;
+  const db = client.db("finance_tracker");
+
+  // Check if budget already exists for this category and month
+  const existingBudget = await db
+    .collection("budgets")
+    .findOne({ category: budget.category, month: budget.month });
+
+  if (existingBudget) {
+    // Update existing budget
+    const result = await db
+      .collection("budgets")
+      .findOneAndUpdate(
+        { category: budget.category, month: budget.month },
+        { $set: { budget: budget.budget, createdAt: budget.createdAt } },
+        { returnDocument: "after" }
+      );
+
+    if (!result) {
+      throw new Error("Failed to update budget");
+    }
+
+    return {
+      _id: result._id.toString(),
+      category: result.category,
+      month: result.month,
+      budget: result.budget,
+      createdAt: result.createdAt,
+    };
+  }
+
+  // Create new budget
+  const result = await db.collection("budgets").insertOne(budget);
+
+  const newBudget = await db
+    .collection("budgets")
+    .findOne({ _id: result.insertedId });
+
+  if (!newBudget) {
+    throw new Error("Failed to create budget");
+  }
+
+  return {
+    _id: newBudget._id.toString(),
+    category: newBudget.category,
+    month: newBudget.month,
+    budget: newBudget.budget,
+    createdAt: newBudget.createdAt,
+  };
+}
+
+export async function updateBudget(
+  category: string,
+  month: string,
+  budgetData: Partial<Pick<Budget, "budget">>
+): Promise<Budget | null> {
+  const client = await clientPromise;
+  const db = client.db("finance_tracker");
+
+  const result = await db
+    .collection("budgets")
+    .findOneAndUpdate(
+      { category, month },
+      { $set: budgetData },
+      { returnDocument: "after" }
+    );
+
+  if (!result || !result.value) return null;
+
+  return {
+    _id: result.value._id.toString(),
+    category: result.value.category,
+    month: result.value.month,
+    budget: result.value.budget,
+    createdAt: result.value.createdAt,
+  };
+}
+
+export async function deleteBudget(id: string): Promise<boolean> {
+  const client = await clientPromise;
+  const db = client.db("finance_tracker");
+
+  const result = await db
+    .collection("budgets")
+    .deleteOne({ _id: new ObjectId(id) });
+
+  return result.deletedCount === 1;
+}
